@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -144,7 +144,7 @@ struct SECURE_SIGN
 	char SecurePrivateKeyName[MAX_SECURE_DEVICE_FILE_LEN + 1];	// Secure device secret key name
 	X *ClientCert;					// Client certificate
 	UCHAR Random[SHA1_SIZE];		// Random value for signature
-	UCHAR Signature[128];			// Signed data
+	UCHAR Signature[4096 / 8];		// Signed data
 	UINT UseSecureDeviceId;
 	UINT BitmapId;					// Bitmap ID
 };

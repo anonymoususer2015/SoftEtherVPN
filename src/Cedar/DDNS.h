@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -115,7 +115,14 @@
 #define	DDNS_H
 
 // Certificate hash
-#define	DDNS_CERT_HASH		"EFAC5FA0CDD14E0F864EED58A73C35D7E33B62F3"
+#define	DDNS_CERT_HASH		"78BF0499A99396907C9F49DD13571C81FE26E6F5" \
+							"439BAFA75A6EE5671FC9F9A02D34FF29881761A0" \
+							"EFAC5FA0CDD14E0F864EED58A73C35D7E33B62F3" \
+							"74DF99D4B1B5F0488A388B50D347D26013DC67A5" \
+							"6EBB39AFCA8C900635CFC11218CF293A612457E4"
+
+#define	DDNS_SNI_VER_STRING		"DDNS"
+
 
 // Destination URL
 #define	DDNS_URL_V4_GLOBAL	"https://x%c.x%c.servers.ddns.softether-network.net/ddns/ddns.aspx"

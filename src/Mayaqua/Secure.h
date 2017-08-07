@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -307,7 +307,8 @@ SECURE_DEVICE SupportedList[] =
 	{18,	SECURE_IC_CARD,		"Gemalto .NET",			"Gemalto",				"gtop11dotnet.dll"},
 	{19,	SECURE_IC_CARD,		"Gemalto .NET 64bit",	"Gemalto",				"gtop11dotnet64.dll"},
 	{20,	SECURE_USB_TOKEN,	"ePass 2003",			"Feitian Technologies",	"eps2003csp11.dll"},
-	{20,	SECURE_USB_TOKEN,	"ePass 1000ND/2000/3000",			"Feitian Technologies",	"ngp11v211.dll"},
+	{21,	SECURE_USB_TOKEN,	"ePass 1000ND/2000/3000",			"Feitian Technologies",	"ngp11v211.dll"},
+	{22,	SECURE_USB_TOKEN,	"CryptoID",				"Longmai Technology",	"cryptoida_pkcs11.dll"},
 };
 
 #ifdef	OS_WIN32

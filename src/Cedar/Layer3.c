@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -537,6 +537,12 @@ void L3KnownArp(L3IF *f, UINT ip, UCHAR *mac)
 	// Validate arguments
 	if (f == NULL || ip == 0 || ip == 0xffffffff || mac == NULL)
 	{
+		return;
+	}
+
+	if (!((f->IpAddress & f->SubnetMask) == (ip & f->SubnetMask)))
+	{
+		// Outside the subnet
 		return;
 	}
 

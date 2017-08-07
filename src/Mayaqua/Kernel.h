@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -194,15 +194,16 @@ void FreeThreading();
 void ThreadPoolProc(THREAD *t, void *param);
 void SetThreadName(UINT thread_id, char *name, void *param);
 
-time_t c_mkgmtime(struct tm *tm);
-time_t System64ToTime(UINT64 i);
+struct tm * c_gmtime_r(const time_64t* timep, struct tm *tm);
+time_64t c_mkgmtime(struct tm *tm);
+time_64t System64ToTime(UINT64 i);
 void TmToSystem(SYSTEMTIME *st, struct tm *t);
 void SystemToTm(struct tm *t, SYSTEMTIME *st);
-void TimeToSystem(SYSTEMTIME *st, time_t t);
-UINT64 TimeToSystem64(time_t t);
-time_t SystemToTime(SYSTEMTIME *st);
-time_t TmToTime(struct tm *t);
-void TimeToTm(struct tm *t, time_t time);
+void TimeToSystem(SYSTEMTIME *st, time_64t t);
+UINT64 TimeToSystem64(time_64t t);
+time_64t SystemToTime(SYSTEMTIME *st);
+time_64t TmToTime(struct tm *t);
+void TimeToTm(struct tm *t, time_64t time);
 void NormalizeTm(struct tm *t);
 void NormalizeSystem(SYSTEMTIME *st);
 void LocalToSystem(SYSTEMTIME *system, SYSTEMTIME *local);

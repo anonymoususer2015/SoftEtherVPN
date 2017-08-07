@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -1818,6 +1818,40 @@ UINT GetDaysUntil2038()
 		return (UINT)((target - now) / (UINT64)(1000 * 60 * 60 * 24));
 	}
 }
+UINT GetDaysUntil2038Ex()
+{
+	SYSTEMTIME now;
+
+	Zero(&now, sizeof(now));
+	SystemTime(&now);
+
+	if (now.wYear >= 2030)
+	{
+		UINT64 now = SystemTime64();
+		UINT64 target;
+		SYSTEMTIME st;
+
+		Zero(&st, sizeof(st));
+		st.wYear = 2049;
+		st.wMonth = 12;
+		st.wDay = 30;
+
+		target = SystemToUINT64(&st);
+
+		if (now >= target)
+		{
+			return 0;
+		}
+		else
+		{
+			return (UINT)((target - now) / (UINT64)(1000 * 60 * 60 * 24));
+		}
+	}
+	else
+	{
+		return GetDaysUntil2038();
+	}
+}
 
 // Issue an X509 certificate
 X *NewX(K *pub, K *priv, X *ca, NAME *name, UINT days, X_SERIAL *serial)
@@ -2236,6 +2270,7 @@ bool AddX509Name(void *xn, int nid, wchar_t *str)
 	X509_NAME *x509_name;
 	UINT utf8_size;
 	BYTE *utf8;
+	int encoding_type = MBSTRING_ASC;
 	// Validate arguments
 	if (xn == NULL || str == NULL)
 	{
@@ -2252,11 +2287,16 @@ bool AddX509Name(void *xn, int nid, wchar_t *str)
 	UniToUtf8(utf8, utf8_size, str);
 	utf8[utf8_size] = 0;
 
+	if (StrLen(utf8) != UniStrLen(str))
+	{
+		encoding_type = MBSTRING_UTF8;
+	}
+
 	// Adding
 	x509_name = (X509_NAME *)xn;
 	Lock(openssl_lock);
 	{
-		X509_NAME_add_entry_by_NID(x509_name, nid, MBSTRING_ASC, utf8, utf8_size, -1, 0);
+		X509_NAME_add_entry_by_NID(x509_name, nid, encoding_type, utf8, utf8_size, -1, 0);
 	}
 	Unlock(openssl_lock);
 	Free(utf8);
@@ -4877,6 +4917,22 @@ bool DhCompute(DH_CTX *dh, void *dst_priv_key, void *src_pub_key, UINT key_size)
 	BN_free(bn);
 
 	return ret;
+}
+
+// Creating a DH 2048bit
+DH_CTX *DhNew2048()
+{
+	return DhNew(DH_SET_2048, 2);
+}
+// Creating a DH 3072bit
+DH_CTX *DhNew3072()
+{
+	return DhNew(DH_SET_3072, 2);
+}
+// Creating a DH 4096bit
+DH_CTX *DhNew4096()
+{
+	return DhNew(DH_SET_4096, 2);
 }
 
 // Creating a DH GROUP1

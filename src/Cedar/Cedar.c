@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -268,6 +268,15 @@ bool IsSupportedWinVer(RPC_WINVER *v)
 		if (v->IsServer == false)
 		{
 			// Windows 10 (not Windows Server 2016)
+			if (v->ServicePack <= 0)
+			{
+				// SP0 only
+				return true;
+			}
+		}
+		else
+		{
+			// Windows Server 2016
 			if (v->ServicePack <= 0)
 			{
 				// SP0 only
@@ -1750,7 +1759,7 @@ CEDAR *NewCedar(X *server_x, K *server_k)
 
 	c->TrafficDiffList = NewList(NULL);
 
-	SetCedarCipherList(c, "RC4-MD5");
+	SetCedarCipherList(c, SERVER_DEFAULT_CIPHER_NAME);
 
 	c->ClientId = _II("CLIENT_ID");
 

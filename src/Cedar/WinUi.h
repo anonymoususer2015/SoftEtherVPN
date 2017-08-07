@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -204,7 +204,7 @@ typedef struct WINUI_SECURE_BATCH
 	X *OutputX;										// Output certificate
 	K *InputK;										// Input secret key
 	LIST *EnumList;									// Enumerated list
-	UCHAR OutputSign[128];							// Output signature
+	UCHAR OutputSign[4096 / 8];						// Output signature
 	bool Succeed;									// Success flag
 } WINUI_SECURE_BATCH;
 

@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -1030,7 +1030,7 @@ void ConnectionSend(CONNECTION *c, UINT64 now)
 	UINT size;
 	SESSION *s;
 	HUB *hub = NULL;
-	bool use_qos;
+	bool use_qos = false;
 	// Validate arguments
 	if (c == NULL)
 	{
@@ -1038,11 +1038,11 @@ void ConnectionSend(CONNECTION *c, UINT64 now)
 	}
 
 	s = c->Session;
-	use_qos = s->QoS;
 
 	if (s != NULL)
 	{
 		hub = s->Hub;
+		use_qos = s->QoS;
 	}
 
 	// Protocol
@@ -3137,10 +3137,7 @@ void ConnectionAccept(CONNECTION *c)
 
 	// Start the SSL communication
 	Debug("StartSSL()\n");
-	if (c->Cedar->AcceptOnlyTls)
-	{
-		s->AcceptOnlyTls = true;
-	}
+	Copy(&s->SslAcceptSettings, &c->Cedar->SslAcceptSettings, sizeof(SSL_ACCEPT_SETTINGS));
 	if (StartSSL(s, x, k) == false)
 	{
 		// Failed

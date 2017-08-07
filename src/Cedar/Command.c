@@ -3,9 +3,9 @@
 // 
 // SoftEther VPN Server, Client and Bridge are free software under GPLv2.
 // 
-// Copyright (c) 2012-2015 Daiyuu Nobori.
-// Copyright (c) 2012-2015 SoftEther VPN Project, University of Tsukuba, Japan.
-// Copyright (c) 2012-2015 SoftEther Corporation.
+// Copyright (c) 2012-2016 Daiyuu Nobori.
+// Copyright (c) 2012-2016 SoftEther VPN Project, University of Tsukuba, Japan.
+// Copyright (c) 2012-2016 SoftEther Corporation.
 // 
 // All Rights Reserved.
 // 
@@ -1245,6 +1245,7 @@ void TtsWorkerThread(THREAD *thread, void *param)
 						if (ret != 0 && ret != SOCK_LATER)
 						{
 							ts->State = 5;
+							ts->LastCommTime = now;
 						}
 						break;
 
@@ -1254,6 +1255,8 @@ void TtsWorkerThread(THREAD *thread, void *param)
 						if (ret != 0 && ret != SOCK_LATER)
 						{
 							UCHAR c;
+
+							ts->LastCommTime = now;
 
 							// Direction of the data is in the first byte that is received
 							c = recv_buf_data[0];
@@ -1276,6 +1279,8 @@ void TtsWorkerThread(THREAD *thread, void *param)
 
 								// Span
 								ts->Span = READ_UINT64(recv_buf_data + sizeof(UINT64) + 1);
+
+								ts->GiveupSpan = ts->Span * 3ULL + 180000ULL;
 							}
 						}
 						break;
@@ -1288,6 +1293,8 @@ void TtsWorkerThread(THREAD *thread, void *param)
 						{
 							// Checking the first byte of received
 							UCHAR c = recv_buf_data[0];
+
+							ts->LastCommTime = now;
 
 							if (ts->FirstRecvTick == 0)
 							{
@@ -1326,11 +1333,42 @@ void TtsWorkerThread(THREAD *thread, void *param)
 						if (ts->NoMoreSendData == false)
 						{
 							ret = Send(ts->Sock, send_buf_data, buf_size, false);
+
+							if (ret != 0 && ret != SOCK_LATER)
+							{
+								ts->LastCommTime = now;
+							}
 						}
 						else
 						{
 							ret = Recv(ts->Sock, recv_buf_data, buf_size, false);
+
+							if (ret != 0 && ret != SOCK_LATER)
+							{
+								ts->LastCommTime = now;
+							}
 						}
+
+						if (ts->FirstSendTick == 0)
+						{
+							ts->FirstSendTick = now;
+						}
+						else
+						{
+							if (ts->FirstSendTick <= now)
+							{
+								if (ts->Span != 0)
+								{
+									UINT64 giveup_tick = ts->FirstSendTick + ts->Span * 3ULL + 180000ULL;
+
+									if (now > giveup_tick)
+									{
+										ret = 0;
+									}
+								}
+							}
+						}
+
 						break;
 
 					case 3:
@@ -1342,6 +1380,11 @@ void TtsWorkerThread(THREAD *thread, void *param)
 						if (ts->LastWaitTick == 0 || ts->LastWaitTick <= Tick64())
 						{
 							ret = Send(ts->Sock, &tmp64, sizeof(tmp64), false);
+
+							if (ret != 0 && ret != SOCK_LATER)
+							{
+								ts->LastCommTime = now;
+							}
 
 							if (ret != SOCK_LATER)
 							{
@@ -1367,6 +1410,12 @@ void TtsWorkerThread(THREAD *thread, void *param)
 							}
 						}
 						break;
+					}
+
+					if (now > (ts->LastCommTime + ts->GiveupSpan))
+					{
+						// Timeout: disconnect orphan sessions
+						ret = 0;
 					}
 
 					if (ret == 0)
@@ -1493,7 +1542,7 @@ void TtsAcceptProc(TTS *tts, SOCK *listen_socket)
 		else
 		{
 			// Connected from the client
-			AcceptInit(s);
+			AcceptInitEx(s, true);
 			tts->NewSocketArrived = true;
 			LockList(tts->TtsSockList);
 			{
@@ -1501,6 +1550,9 @@ void TtsAcceptProc(TTS *tts, SOCK *listen_socket)
 
 				ts->Id = (++tts->IdSeed);
 				ts->Sock = s;
+
+				ts->GiveupSpan = (UINT64)(10 * 60 * 1000);
+				ts->LastCommTime = Tick64();
 
 				UniFormat(tmp, sizeof(tmp), _UU("TTS_ACCEPTED"), ts->Id,
 					s->RemoteHostname, s->RemotePort);
@@ -1757,6 +1809,7 @@ void TtcThread(THREAD *thread, void *param)
 	bool ok = false;
 	UINT buf_size;
 	UCHAR *send_buf_data, *recv_buf_data;
+	IP ip_ret;
 	// Validate arguments
 	if (thread == NULL || param == NULL)
 	{
@@ -1786,10 +1839,13 @@ void TtcThread(THREAD *thread, void *param)
 
 	ok = true;
 
+	Zero(&ip_ret, sizeof(ip_ret));
+
 	for (i = 0;i < ttc->NumTcp;i++)
 	{
 		SOCK *s;
 		TTC_SOCK *ts = ZeroMalloc(sizeof(TTC_SOCK));
+		char target_host[MAX_SIZE];
 
 		ts->Id = i + 1;
 
@@ -1806,7 +1862,14 @@ void TtcThread(THREAD *thread, void *param)
 			ts->Download = ((i % 2) == 0) ? true : false;
 		}
 
-		s = ConnectEx2(ttc->Host, ttc->Port, 0, ttc->Cancel);
+		StrCpy(target_host, sizeof(target_host), ttc->Host);
+
+		if (IsZeroIp(&ip_ret) == false)
+		{
+			IPToStr(target_host, sizeof(target_host), &ip_ret);
+		}
+
+		s = ConnectEx4(target_host, ttc->Port, 0, ttc->Cancel, NULL, NULL, false, false, true, &ip_ret);
 
 		if (s == NULL)
 		{
@@ -8047,7 +8110,7 @@ UINT PsServerCipherGet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param)
 	RPC_STR t;
 	TOKEN_LIST *ciphers;
 	UINT i;
-	wchar_t tmp[MAX_SIZE];
+	wchar_t tmp[4096];
 
 	o = ParseCommandList(c, cmd_name, str, NULL, 0);
 	if (o == NULL)
@@ -10008,6 +10071,10 @@ UINT PsLogFileGet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param)
 	}
 
 	filename = GetParamStr(o, "SAVE");
+	if (IsEmptyStr(filename))
+	{
+		filename = GetParamStr(o, "SAVEPATH");
+	}
 
 	c->Write(c, _UU("CMD_LogFileGet_START"));
 
